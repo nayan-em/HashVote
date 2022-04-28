@@ -1,34 +1,38 @@
 from flask import Flask, request, jsonify
-import sqlite3 as sql
+from sqlalchemy import false
+from sympy import sec
 import models as dbHandler
-import json
 
 from src.Blockchain import Blockchain
 from src.utils import printMyTrans, printBlockchain, voteCount
-from src.zkp import gen_public_sig, verify
-from datetime import datetime
-import random as r, math, names
+from src.zkp import zkp
 
 app = Flask(__name__)
 
+import sqlite3 as sql
+
 conn = sql.connect('database.db')
 cur = conn.cursor()
+
 conn.execute("""CREATE TABLE IF NOT EXISTS users (
   id text primary key,
   name text not null,
   password text not null
 )""")
+
 conn.execute("""CREATE TABLE IF NOT EXISTS polls (
   id INTEGER primary key AUTOINCREMENT,
   name text not null,
   desc text not null
 )""")
+
 conn.execute("""CREATE TABLE IF NOT EXISTS candidates (
   id INTEGER primary key AUTOINCREMENT,
   pollId INTEGER not null,
   name text not null,
   desc text not null
 )""")
+
 conn.close()
 
 # Initalize Blockchain object with given difficulty
@@ -117,7 +121,7 @@ def vote():
 
 
 @app.route('/viewTrans', methods=['GET'])
-def viewTrans():
+def viewUser():
     userId = request.args.get('userId')
     while len(blockchain.transactions) > 0:
         blockchain.mineBlock(max_trans_per_Block, difficulty)
@@ -152,11 +156,21 @@ def countVotes():
     return jsonify(result)
 
 @app.route('/zkp', methods=['GET'])
-def verifyZKP():
-    secretKey = request.args.get('secretKey')
-    signature = gen_public_sig(secretKey, "1 vote")
-    print(verify(signature))
-    return verify(signature)
+def verifyTransaction():
+    voter_id = request.args.get('secretKey')
+    zkp_obj = zkp(voter_id)
+    verified = True
+    for i in range(3):
+        if zkp_obj.round(zkp_obj.h):
+            print("Verification Successful in round ", i+1)
+        else:
+            verified = False
+            break
+    
+    if verified is True:
+        return "ZKP result: VERIFICATION SUCCESSFULLY COMPLETE"
+    else:
+        return "ZKP result: VERIFICATION UNSUCCESSFUL"
 
 if __name__ == '__main__':
     app.run(debug = True)

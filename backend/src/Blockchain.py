@@ -22,7 +22,7 @@ class Blockchain:
 
         gen = ""
         while not gen.startswith("0"*difficulty):
-            gen = sha256((str(datetime.now()) + "Yash | Nayan | Ayush").encode()).hexdigest()
+            gen = sha256((str(datetime.now()) + "Nayan | Tejas | Ashwin").encode()).hexdigest()
         self.blockchain.append(block.createGenesis(gen))
         self.prevblock = self.blockchain[-1]
 
@@ -35,9 +35,6 @@ class Blockchain:
         """
         new_transaction = transaction(voterId, voterName, candId, candName, pollId, pollName)
         self.transactions.append(new_transaction)
-
-    def verifyTransaction(self, transaction):
-        print("this is where verification using zkp is done")
 
     def getTransactions(self, number_of_transactions):
         """
@@ -75,7 +72,7 @@ class Blockchain:
 
         newBlock = block(len(self.blockchain), datetime.now(), block_trans, self.prevblock.hash, h, nonce)
         if(self.verify(newBlock)):
-            self.blockchain.append(newBlock) 
+            self.blockchain.append(newBlock)
             self.prevblock = newBlock 
         else:
             print("Invalid Block Entry Rejected")

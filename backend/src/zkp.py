@@ -1,54 +1,60 @@
-from hashlib import sha256
-from random import randint
+import random, timeit
+from Crypto.Util import number
 
-# Algo: https://drive.google.com/file/d/106HnVHW4nBKMmZmay_EQK3KiKB9FnkFE/view?usp=sharing
+class zkp:
+    def __init__(self, id):
+        self.id = self.getID(id)
+        self.P = self.genLargePrime(15)
+        self.g = self.getGenerator()
+        self.r = random.randint(0, self.P - 1)
 
-def hashThis(a, b, c):
-    hash=sha256()
-    hash.update(str(a).encode())
-    hash.update(str(b).encode())
-    hash.update(str(c).encode())
-    return int(hash.hexdigest(),16)
+        self.y = pow(self.g, self.id) % self.P
+        self.h = pow(self.g, self.r) % self.P
 
-def convert_message_to_int(M):
-    return int(sha256(M.encode()).hexdigest(), 16)
+    def round(self, h):
+        b = random.randint(0,1)
+        s = (self.r + b*self.id) % (self.P - 1)
 
-def gen_public_sig(X, M):	
+        LHS = pow(self.g, s) % self.P
+        RHS = h * pow(self.y, b) % self.P 
+        return LHS == RHS
 
-    a = 2  # Genrator Function
-    p = 2695139  # prime number
+    def __str__(self):
+        line = "This is a zkp object created for the voter ID number {}, Large Prime: {} and Generator: {}".format(self.pan, self.P, self.g)
+        return str(line)
 
-    x = convert_message_to_int(X)
+    @staticmethod
+    def printInfo():
+        print("""This is a zkp class object created. It will just verify that the user has a password or
+                something unique like a Voter ID in our case which will be hashed and converted to a unique value which
+                is sent to the server. The original unique value is kept secret and will never reach the server.""")
 
-    m = convert_message_to_int(M)
+    @staticmethod
+    def genLargePrime(n_length = None):
+        if not n_length:
+            n_length = 1024
+        primeNum = number.getPrime(n_length)
+        return (primeNum)
 
-    y = pow(a, x, p)
-    r = randint(1, p - 1)
+    @staticmethod
+    def getGenerator(range = 20):
+        return random.randint(1, range)
 
-    t1 = pow(m, x, p)
-    t2 = pow(m, r, p)
-    t3 = pow(a, r, p)
-    c = hashThis(t1, t2, t3)
+    @staticmethod
+    def getID(id):
+        ans = 0
+        place = 1
+        for ch in id:
+            ans += ord(ch)*pow(10,place)
+        return ans
 
-    s = (c * x) + r
+    
 
-    tup = (y, s, t1, t2, t3)
+def __main__():
+    start = timeit.default_timer()
+    
+    obj = zkp("2354")
+    # print(obj)
+    print('Time: ', timeit.default_timer() - start)  
 
-    return tup
-
-# verify
-def verify(t):
-
-    y, s, t1, t2, t3 = t
-
-    a = 2  # Genrator Function
-    p = 2695139  # prime number
-
-    c = hashThis(t1, t2, t3)
-
-    if (pow(a, s, p) == (pow(y, c, p) * t3) % p):
-        return True
-    return False
-
-
-# print(verify(gen_public_sig(123, 'hi')))
+# __main__()

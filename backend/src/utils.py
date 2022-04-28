@@ -29,7 +29,6 @@ def voteCount(blockchain, pollId):
     candidates = []
     for block in reversed(blockchain):
         for trans in reversed(block.data):
-            print(trans.voterId, trans.voterName, trans.candId, trans.candName, trans.pollId, trans.pollName)
             if (trans.pollId == pollId) and (trans.voterId not in voters):
                 voters.append(trans.voterId)
                 candidates.append(trans.candId)

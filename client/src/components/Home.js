@@ -4,7 +4,6 @@ import axios from "axios"
 import Card from './Card.js'
 import Navbar from "./Navbar.js";
 import background from '../img/background.jpg'
-// import "./Poll.css";
 
 function Home() {
 

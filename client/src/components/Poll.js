@@ -2,7 +2,6 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react"
 import axios from "axios"
 import { Accordion, Modal, Form, Button } from 'react-bootstrap'
-// import "./Poll.css";
 import NavigatePoll from "./NavigatePoll.js";
 import background from '../img/background.jpg'
 
@@ -22,6 +21,7 @@ const Poll = () => {
   const [show, setShow] = useState(false)
   const [showZKP, setShowZKP] = useState(false)
   const [secretKey, setSecretKey] = useState("")
+  const [votedCand, setVotedCand] = useState([])
 
   const [isNameEmpty, setIsNameEmpty] = useState(false)
   const [isDescEmpty, setIsDescEmpty] = useState(false)
@@ -55,24 +55,8 @@ const Poll = () => {
     setIsNameEmpty(false)
     setIsDescEmpty(false)
     setShow(false)
-    showMessage(false)
-  }
-
-  const handleVote = (candId, candName) => {
-    axios.post("/vote", {}, {
-      params: {
-        voterId: user[0],
-        voterName: user[1],
-        candId,
-        candName,
-        pollId: poll[0],
-        pollName: poll[1],
-      }
-    })
-    .then(res => {
-      setMessage(res.data)
-      setShowMessage(true)
-    })
+    setShowMessage(false)
+    setShowZKP(false)
   }
 
   const handleSubmitCand = () => {
@@ -101,13 +85,35 @@ const Poll = () => {
   }
 
   const handleSubmitZKP = () => {
+    const candId = votedCand[0]
+    const candName = votedCand[1]
+
     axios.get("/zkp", {
       params: {
         secretKey
       }
     })
     .then(res => {
-      console.log(res.data);
+      setShowZKP(false)
+        if(res.data == "ZKP result: VERIFICATION SUCCESSFULLY COMPLETE"){
+          axios.post("/vote", {}, {
+            params: {
+              voterId: user[0],
+              voterName: user[1],
+              candId,
+              candName,
+              pollId: poll[0],
+              pollName: poll[1],
+            }
+          })
+          .then(res => {
+            setMessage(res.data)
+            setShowMessage(true)
+          })
+        }
+        else{
+          console.log("Sorry, couldn't verify the identity")
+        }
     })
   }
 
@@ -152,7 +158,7 @@ const Poll = () => {
                     <Accordion.Header>{x[2]}</Accordion.Header>
                     <Accordion.Body>
                       <div className='text-muted mb-2'>{x[3]}</div>
-                      <button className="btn btn-success mt-2 " onClick={() => handleVote(x[0], x[2])}>Vote</button>
+                      <button className="btn btn-success mt-2 " onClick={() => {setVotedCand([x[0], x[2]]); setShowZKP(true)}}>Vote</button>
                     </Accordion.Body>
                   </Accordion.Item>
                 </Accordion>
@@ -205,8 +211,8 @@ const Poll = () => {
         <Modal.Body>
           <Form>
             <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
-              <Form.Label>Password</Form.Label>
-              <Form.Control type="password" value={secretKey} onChange={e => setSecretKey(e.target.value)} placeholder="Enter you secret key" required autoFocus />
+              <Form.Label>Voter ID</Form.Label>
+              <Form.Control type="password" value={secretKey} onChange={e => setSecretKey(e.target.value)} placeholder="Enter you voter id" required autoFocus />
               {/* <div className={"text-danger mt-2 " + (showError ? "" : "d-none")}>Could not verify voter!</div> */}
             </Form.Group>
           </Form>

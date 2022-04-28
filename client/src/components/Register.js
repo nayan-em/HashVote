@@ -74,7 +74,7 @@ function Login() {
                 <div className="text-center text-lg-start mt-5 pt-2">
                   <button type="button" className="btn btn-primary btn-lg" onClick={handleSubmit}>Submit</button>
                   <p className="small fw-bold mt-2 pt-1 mb-0">Already have an account?
-                  <Link to={"/login"}>
+                  <Link to={"/"}>
                     <a href="#!" className="link-danger ms-2">Login</a>
                   </Link>
                   </p>

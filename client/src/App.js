@@ -3,7 +3,6 @@ import Login from './components/Login.js'
 import Register from './components/Register'
 import Home from './components/Home'
 import Poll from './components/Poll'
-import CreatePoll from "./components/CreatePoll.js";
 import Transactions from "./components/Transactions.js";
 import VoteCount from "./components/VoteCount.js";
 import Blockchain from "./components/Blockchain.js";
@@ -18,7 +17,6 @@ function App() {
           <Route exact path='/register' element={<Register />} />
           <Route exact path='/home/:id' element={<Home />} />
           <Route exact path='/poll/:id/:pollId' element={<Poll />} />
-          <Route exact path='/createPoll' element={<CreatePoll />} />
           <Route exact path='/viewTrans' element={<Transactions />} />
           <Route exact path='/countVotes' element={<VoteCount />} />
           <Route exact path='/viewBlockchain' element={<Blockchain />} />
